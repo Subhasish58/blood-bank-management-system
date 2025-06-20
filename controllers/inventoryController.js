@@ -5,7 +5,7 @@ const userModel = require("../models/userModel");
 // CREATE INVENTORY
 const createInventoryController = async (req, res) => {
     try {
-        const { email, inventoryType } = req.body;
+        const { email } = req.body;
         //validation
         const user = await userModel.findOne({ email });
         if (!user) {
@@ -70,6 +70,9 @@ const createInventoryController = async (req, res) => {
             }
             req.body.hospital = user?._id;
         }
+        else {
+            req.body.donor = user?._id;
+        }
 
         //save record
         const inventory = new inventoryModel(req.body);
@@ -113,4 +116,34 @@ const getInventoryController = async (req, res) => {
     }
 };
 
-module.exports = { createInventoryController, getInventoryController }; 
+// GET DONOR RECORDS
+const getDonorsController = async (req, res) => {
+    try {
+        const organisation = req.userId;
+        //find donars
+        const donorId = await inventoryModel.distinct("donor", {
+            organisation,
+        });
+        // console.log(donorId);
+        const donors = await userModel.find({ _id: { $in: donorId } });
+
+        return res.status(200).send({
+            success: true,
+            message: "Donor Record Fetched Successfully",
+            donors,
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send({
+            success: false,
+            message: "Error in Donor records",
+            error,
+        });
+    }
+};
+
+module.exports = {
+    createInventoryController,
+    getInventoryController,
+    getDonorsController,
+};

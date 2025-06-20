@@ -5,12 +5,21 @@ import Register from "./pages/auth/Register";
 import { ToastContainer } from "react-toastify";
 import ProtectedRoute from "./components/Routes/ProtectedRoute";
 import PublicRoute from "./components/Routes/PublicRoute";
+import Donor from "./pages/Dashboard/Donor";
 
 function App() {
   return (
     <>
       <ToastContainer />
       <Routes>
+        <Route
+          path="/donor"
+          element={
+            <ProtectedRoute>
+              <Donor />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/"
           element={
