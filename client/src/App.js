@@ -7,6 +7,8 @@ import ProtectedRoute from "./components/Routes/ProtectedRoute";
 import PublicRoute from "./components/Routes/PublicRoute";
 import Donor from "./pages/Dashboard/Donor";
 import Hospitals from "./pages/Dashboard/Hospitals";
+import OrganisationPage from "./pages/Dashboard/OrganisationPage";
+
 
 function App() {
   return (
@@ -18,6 +20,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Hospitals />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/organisation"
+          element={
+            <ProtectedRoute>
+              <OrganisationPage />
             </ProtectedRoute>
           }
         />
