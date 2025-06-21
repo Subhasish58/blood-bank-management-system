@@ -1,6 +1,6 @@
 const express = require("express");
 const authMiddleware = require("../middlewares/authMiddleware");
-const { createInventoryController, getInventoryController, getDonorsController, getHospitalController, getOrganisationController } = require("../controllers/inventoryController");
+const { createInventoryController, getInventoryController, getDonorsController, getHospitalController, getOrganisationController, getOrganisationForHospitalController } = require("../controllers/inventoryController");
 
 const router = express.Router();
 
@@ -16,4 +16,9 @@ router.get("/get-hospitals", authMiddleware, getHospitalController);
 
 router.get("/get-organisation", authMiddleware, getOrganisationController);
 
+router.get(
+    "/get-organisation-for-hospital",
+    authMiddleware,
+    getOrganisationForHospitalController
+);
 module.exports = router;
