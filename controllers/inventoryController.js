@@ -116,6 +116,30 @@ const getInventoryController = async (req, res) => {
     }
 };
 
+// GET Hospital BLOOD RECORDS
+const getInventoryHospitalController = async (req, res) => {
+    try {
+        const inventory = await inventoryModel
+            .find(req.body.filters)
+            .populate("donor")
+            .populate("hospital")
+            .populate("organisation")
+            .sort({ createdAt: -1 });
+        return res.status(200).send({
+            success: true,
+            messaage: "get hospital comsumer records successfully",
+            inventory,
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send({
+            success: false,
+            message: "Error In Get consumer Inventory",
+            error,
+        });
+    }
+};
+
 // GET DONOR RECORDS
 const getDonorsController = async (req, res) => {
     try {
@@ -220,5 +244,6 @@ module.exports = {
     getDonorsController,
     getHospitalController,
     getOrganisationController,
-    getOrganisationForHospitalController
+    getOrganisationForHospitalController,
+    getInventoryHospitalController
 };
