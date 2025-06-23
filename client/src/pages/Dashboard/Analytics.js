@@ -77,31 +77,38 @@ const Analytics = () => {
                     </div>
                 ))}
             </div>
-            <div className="container my-3">
-                <h1 className="my-3">Recent Blood Transactions</h1>
-                <table className="table ">
-                    <thead>
-                        <tr>
-                            <th scope="col">Blood Group</th>
-                            <th scope="col">Inventory Type</th>
-                            <th scope="col">Quantity</th>
-                            <th scope="col">Donor Email</th>
-                            <th scope="col">TIme & Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {inventoryData?.map((record) => (
-                            <tr key={record._id}>
-                                <td>{record.bloodGroup}</td>
-                                <td>{record.inventoryType}</td>
-                                <td>{record.quantity} (ML)</td>
-                                <td>{record.email}</td>
-                                <td>{moment(record.createdAt).format("DD/MM/YYYY hh:mm A")}</td>
+            <div className="container my-4">
+                <h2 className="text-primary border-bottom pb-2">Recent Blood Transactions</h2>
+                <div className="table-responsive mt-3">
+                    <table className="table table-hover table-bordered table-striped shadow-sm">
+                        <thead className="table-dark text-center">
+                            <tr>
+                                <th>Blood Group</th>
+                                <th>Inventory Type</th>
+                                <th>Quantity</th>
+                                <th>Donor Email</th>
+                                <th>Time & Date</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody className="text-center align-middle">
+                            {inventoryData?.map((record) => (
+                                <tr key={record._id}>
+                                    <td><b>{record.bloodGroup}</b></td>
+                                    <td>
+                                        <span className={`badge ${record.inventoryType === "in" ? "bg-success" : "bg-danger"}`}>
+                                            {record.inventoryType.toUpperCase()}
+                                        </span>
+                                    </td>
+                                    <td>{record.quantity} (ML)</td>
+                                    <td>{record.email || <i className="text-muted">N/A</i>}</td>
+                                    <td>{moment(record.createdAt).format("DD/MM/YYYY hh:mm A")}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
+
         </>
     );
 };
