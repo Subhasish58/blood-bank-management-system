@@ -3,7 +3,9 @@ const authMiddleware = require("../middlewares/authMiddleware");
 const { createInventoryController, getInventoryController, getDonorsController, getHospitalController,
     getOrganisationController,
     getOrganisationForHospitalController,
-    getInventoryHospitalController } = require("../controllers/inventoryController");
+    getInventoryHospitalController,
+    getRecentInventoryController,
+} = require("../controllers/inventoryController");
 
 const router = express.Router();
 
@@ -18,6 +20,12 @@ router.get("/get-donors", authMiddleware, getDonorsController);
 router.get("/get-hospitals", authMiddleware, getHospitalController);
 
 router.get("/get-organisation", authMiddleware, getOrganisationController);
+
+router.get(
+    "/get-recent-inventory",
+    authMiddleware,
+    getRecentInventoryController
+);
 
 router.get(
     "/get-organisation-for-hospital",
