@@ -29,10 +29,16 @@ const HomePage = () => {
         getBloodRecords();
     }, []);
 
+    useEffect(() => {
+        if (user?.role === "admin") {
+            navigate("/admin");
+        }
+    }, [user, navigate]);
+
+
 
     return (
         <Layout>
-            {user?.role === "admin" && navigate("/admin")}
             {error && <span>{alert(error)}</span>}
             {loading ? (
                 <Spinner />
