@@ -37,13 +37,7 @@ const Header = () => {
                                     Analytics
                                 </Link>
                             </li>
-                        ) : (
-                            <li className="nav-item mx-3">
-                                <Link to="/" className="nav-link">
-                                    Home
-                                </Link>
-                            </li>
-                        )}
+                        ) : null}
                         <li className="nav-item mx-3">
                             <button className="btn btn-danger" onClick={handleLogout}>
                                 Logout

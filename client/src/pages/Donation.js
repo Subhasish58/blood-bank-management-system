@@ -7,18 +7,29 @@ import { useSelector } from "react-redux";
 const Donation = () => {
     const { user } = useSelector((state) => state.auth);
     const [data, setData] = useState([]);
-    //find donor records
-    const getDonors = async () => {
+    //find donor/hospital records
+    const getRecords = async () => {
         try {
-            const { data } = await API.post("/inventory/get-inventory-hospital", {
-                filters: {
-                    inventoryType: "in",
-                    donor: user?._id,
-                },
-            });
-            if (data?.success) {
-                setData(data?.inventory);
-                console.log(data);
+            if (user?.role === "donor") {
+                const { data } = await API.post("/inventory/get-inventory-hospital", {
+                    filters: {
+                        inventoryType: "in",
+                        donor: user?._id,
+                    },
+                });
+                if (data?.success) {
+                    setData(data?.inventory);
+                }
+            } else if (user?.role === "hospital") {
+                const { data } = await API.post("/inventory/get-inventory-hospital", {
+                    filters: {
+                        inventoryType: "out",
+                        hospital: user?._id,
+                    },
+                });
+                if (data?.success) {
+                    setData(data?.inventory);
+                }
             }
         } catch (error) {
             console.log(error);
@@ -26,19 +37,21 @@ const Donation = () => {
     };
 
     useEffect(() => {
-        getDonors();
-    }, []);
+        getRecords();
+    }, [user]);
 
     return (
         <Layout>
             <div className="container mt-4">
+                <h4 className="mb-4">
+                    {user?.role === "donor" ? "My Donation History" : "Blood Received from Organisations"}
+                </h4>
                 <table className="table">
                     <thead>
                         <tr>
                             <th scope="col">Blood Group</th>
-                            <th scope="col">Inventory Type</th>
                             <th scope="col">Quantity</th>
-                            <th scope="col">Email</th>
+                            <th scope="col">{user?.role === "donor" ? "Donated To" : "Received From"}</th>
                             <th scope="col">Date</th>
                         </tr>
                     </thead>
@@ -46,9 +59,13 @@ const Donation = () => {
                         {data?.map((record) => (
                             <tr key={record._id}>
                                 <td>{record.bloodGroup}</td>
-                                <td>{record.inventoryType}</td>
-                                <td>{record.quantity}</td>
-                                <td>{record.email}</td>
+                                <td>{record.quantity} ML</td>
+                                <td>
+                                    {user?.role === "donor"
+                                        ? record.organisation?.organisationName || record.organisation?.name || "N/A"
+                                        : record.organisation?.organisationName || record.organisation?.name || "N/A"
+                                    }
+                                </td>
                                 <td>{moment(record.createdAt).format("DD/MM/YYYY hh:mm A")}</td>
                             </tr>
                         ))}

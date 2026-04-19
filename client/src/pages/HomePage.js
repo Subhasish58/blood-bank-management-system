@@ -32,6 +32,8 @@ const HomePage = () => {
     useEffect(() => {
         if (user?.role === "admin") {
             navigate("/admin");
+        } else if (user?.role === "donor") {
+            navigate("/donation");
         }
     }, [user, navigate]);
 
@@ -45,15 +47,17 @@ const HomePage = () => {
             ) : (
                 <>
                     <div className="container">
-                        <h4
-                            className="ms-4"
-                            data-bs-toggle="modal"
-                            data-bs-target="#staticBackdrop"
-                            style={{ cursor: "pointer" }}
-                        >
-                            <i className="fa-solid fa-plus text-success py-4"></i>
-                            Add Inventory
-                        </h4>
+                        {user?.role !== "donor" && (
+                            <h4
+                                className="ms-4"
+                                data-bs-toggle="modal"
+                                data-bs-target="#staticBackdrop"
+                                style={{ cursor: "pointer" }}
+                            >
+                                <i className="fa-solid fa-plus text-success py-4"></i>
+                                Add Inventory
+                            </h4>
+                        )}
                         <table className="table ">
                             <thead>
                                 <tr>

@@ -21,7 +21,7 @@ const ProtectedRoute = ({ children }) => {
 
     useEffect(() => {
         getUser();
-    });
+    }, []);
 
     if (localStorage.getItem("token")) {
         return children;

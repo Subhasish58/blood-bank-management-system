@@ -1,4 +1,5 @@
 import { Routes, Route } from "react-router-dom";
+import { useSelector } from "react-redux";
 import HomePage from "./pages/HomePage";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
@@ -17,6 +18,7 @@ import OrgList from "./pages/Admin/OrgList";
 import AdminHome from "./pages/Admin/AdminHome";
 
 function App() {
+  const { user } = useSelector((state) => state.auth);
   return (
     <>
       <ToastContainer />
@@ -61,14 +63,16 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/analytics"
-          element={
-            <ProtectedRoute>
-              <Analytics />
-            </ProtectedRoute>
-          }
-        />
+        {user?.role !== "donor" && (
+          <Route
+            path="/analytics"
+            element={
+              <ProtectedRoute>
+                <Analytics />
+              </ProtectedRoute>
+            }
+          />
+        )}
         <Route
           path="/consumer"
           element={
@@ -85,22 +89,26 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/organisation"
-          element={
-            <ProtectedRoute>
-              <OrganisationPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/donor"
-          element={
-            <ProtectedRoute>
-              <Donor />
-            </ProtectedRoute>
-          }
-        />
+        {user?.role !== "donor" && (
+          <Route
+            path="/donor"
+            element={
+              <ProtectedRoute>
+                <Donor />
+              </ProtectedRoute>
+            }
+          />
+        )}
+        {user?.role !== "donor" && (
+          <Route
+            path="/organisation"
+            element={
+              <ProtectedRoute>
+                <OrganisationPage />
+              </ProtectedRoute>
+            }
+          />
+        )}
         <Route
           path="/"
           element={
