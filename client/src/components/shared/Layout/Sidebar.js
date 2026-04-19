@@ -69,7 +69,7 @@ const Sidebar = () => {
                                 }`}
                         >
                             <i className="fa-sharp fa-solid fa-building-ngo"></i>
-                            <Link to="/donation">Donation</Link>
+                            <Link to="/donation">Blood Received</Link>
                         </div>
                     )}
                     {user?.role === "hospital" && (
@@ -87,7 +87,7 @@ const Sidebar = () => {
                                 }`}
                         >
                             <i className="fa-sharp fa-solid fa-building-ngo"></i>
-                            <Link to="/donation">Donation</Link>
+                            <Link to="/donation">Blood Received</Link>
                         </div>
                     )}
 

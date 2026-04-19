@@ -29,15 +29,20 @@ const Header = () => {
                                 <span className="badge bg-secondary">{user?.role}</span>
                             </p>
                         </li>
-                        {location.pathname === "/" ||
-                            location.pathname === "/donor" ||
-                            location.pathname === "/hospital" ? (
+                        {location.pathname !== "/" && (
+                            <li className="nav-item mx-3">
+                                <Link to="/" className="nav-link">
+                                    Home
+                                </Link>
+                            </li>
+                        )}
+                        {location.pathname === "/" && user?.role !== "donor" && (
                             <li className="nav-item mx-3">
                                 <Link to="/analytics" className="nav-link">
                                     Analytics
                                 </Link>
                             </li>
-                        ) : null}
+                        )}
                         <li className="nav-item mx-3">
                             <button className="btn btn-danger" onClick={handleLogout}>
                                 Logout
