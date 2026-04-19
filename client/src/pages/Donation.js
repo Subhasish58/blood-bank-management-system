@@ -24,8 +24,8 @@ const Donation = () => {
             } else if (user?.role === "hospital") {
                 const { data } = await API.post("/inventory/get-inventory-hospital", {
                     filters: {
-                        inventoryType: "out",
-                        hospital: user?._id,
+                        organisation: user?._id,
+                        inventoryType: "in",
                     },
                 });
                 if (data?.success) {
@@ -93,9 +93,7 @@ const Donation = () => {
                             <tr key={record._id}>
                                 <td>{record.bloodGroup}</td>
                                 <td>{record.quantity} ML</td>
-                                <td>
-                                    {record.organisation?.organisationName || record.organisation?.name || "N/A"}
-                                </td>
+                                <td>{record.email}</td>
                                 <td>{moment(record.createdAt).format("DD/MM/YYYY hh:mm A")}</td>
                             </tr>
                         ))}

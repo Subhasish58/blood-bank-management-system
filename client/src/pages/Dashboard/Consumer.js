@@ -7,18 +7,17 @@ import { useSelector } from "react-redux";
 const Consumer = () => {
     const { user } = useSelector((state) => state.auth);
     const [data, setData] = useState([]);
-    //find donar records
-    const getDonors = async () => {
+    //find consumer records (blood OUT from hospital)
+    const getConsumerRecords = async () => {
         try {
             const { data } = await API.post("/inventory/get-inventory-hospital", {
                 filters: {
+                    organisation: user?._id,
                     inventoryType: "out",
-                    hospital: user?._id,
                 },
             });
             if (data?.success) {
                 setData(data?.inventory);
-                console.log(data);
             }
         } catch (error) {
             console.log(error);
@@ -26,17 +25,17 @@ const Consumer = () => {
     };
 
     useEffect(() => {
-        getDonors();
-    }, []);
+        getConsumerRecords();
+    }, [user]);
 
     return (
         <Layout>
             <div className="container mt-4">
+                <h4 className="mb-4">Blood Sent to Consumer</h4>
                 <table className="table">
                     <thead>
                         <tr>
                             <th scope="col">Blood Group</th>
-                            <th scope="col">Inventory TYpe</th>
                             <th scope="col">Quantity</th>
                             <th scope="col">Email</th>
                             <th scope="col">Date</th>
@@ -46,8 +45,7 @@ const Consumer = () => {
                         {data?.map((record) => (
                             <tr key={record._id}>
                                 <td>{record.bloodGroup}</td>
-                                <td>{record.inventoryType}</td>
-                                <td>{record.quantity}</td>
+                                <td>{record.quantity} ML</td>
                                 <td>{record.email}</td>
                                 <td>{moment(record.createdAt).format("DD/MM/YYYY hh:mm A")}</td>
                             </tr>
