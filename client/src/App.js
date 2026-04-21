@@ -16,6 +16,7 @@ import DonorList from "./pages/Admin/DonorList";
 import HospitalList from "./pages/Admin/HospitalList";
 import OrgList from "./pages/Admin/OrgList";
 import AdminHome from "./pages/Admin/AdminHome";
+import AdminEntityAnalytics from "./pages/Admin/AdminEntityAnalytics";
 
 function App() {
   const { user } = useSelector((state) => state.auth);
@@ -52,6 +53,14 @@ function App() {
           element={
             <ProtectedRoute>
               <OrgList />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/entity-analytics"
+          element={
+            <ProtectedRoute>
+              <AdminEntityAnalytics />
             </ProtectedRoute>
           }
         />

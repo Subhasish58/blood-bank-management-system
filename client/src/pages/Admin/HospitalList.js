@@ -2,8 +2,10 @@ import React, { useEffect, useState } from "react";
 import Layout from "../../components/shared/Layout/Layout";
 import moment from "moment";
 import API from "../../services/API";
+import { useNavigate } from "react-router-dom";
 
 const HospitalList = () => {
+    const navigate = useNavigate();
     const [data, setData] = useState([]);
     //find donar records
     const getDonors = async () => {
@@ -58,6 +60,12 @@ const HospitalList = () => {
                             <td>{record.phone}</td>
                             <td>{moment(record.createdAt).format("DD/MM/YYYY hh:mm A")}</td>
                             <td>
+                                <button
+                                    className="btn btn-primary me-2"
+                                    onClick={() => navigate("/admin/entity-analytics", { state: { entity: record, role: "hospital" } })}
+                                >
+                                    View Analytics
+                                </button>
                                 <button
                                     className="btn btn-danger"
                                     onClick={() => handleDelete(record._id)}

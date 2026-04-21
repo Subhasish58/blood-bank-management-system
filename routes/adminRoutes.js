@@ -5,6 +5,7 @@ const {
     getHospitalListController,
     getOrgListController,
     deleteDonorController,
+    getEntityAnalyticsController,
 } = require("../controllers/adminController");
 const adminMiddleware = require("../middlewares/adminMiddleware");
 
@@ -37,6 +38,14 @@ router.delete(
     authMiddleware,
     adminMiddleware,
     deleteDonorController
+);
+
+//GET || ENTITY ANALYTICS (org or hospital)
+router.get(
+    "/entity-analytics",
+    authMiddleware,
+    adminMiddleware,
+    getEntityAnalyticsController
 );
 
 //EXPORT
