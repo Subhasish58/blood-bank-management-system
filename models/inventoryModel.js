@@ -39,6 +39,10 @@ const inventorySchema = new mongoose.Schema(
                 return this.inventoryType === "in";
             },
         },
+        sender: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "users",
+        },
     },
     { timestamps: true }
 );

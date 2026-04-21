@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import Header from "../../components/shared/Layout/Header";
 import API from "./../../services/API";
+import { useSelector } from "react-redux";
 import moment from "moment";
 
 const Analytics = () => {
+    const { user } = useSelector((state) => state.auth);
     const [data, setData] = useState([]);
     const [inventoryData, setInventoryData] = useState([]);
     const colors = [
@@ -19,10 +21,16 @@ const Analytics = () => {
     //GET BLOOD GROUP DATA
     const getBloodGroupData = async () => {
         try {
-            const { data } = await API.get("/analytics/bloodGroups-data");
-            if (data?.success) {
-                setData(data?.bloodGroupData);
-                // console.log(data);
+            if (user?.role === "hospital") {
+                const { data } = await API.get("/analytics/bloodGroups-data-hospital");
+                if (data?.success) {
+                    setData(data?.bloodGroupData);
+                }
+            } else {
+                const { data } = await API.get("/analytics/bloodGroups-data");
+                if (data?.success) {
+                    setData(data?.bloodGroupData);
+                }
             }
         } catch (error) {
             console.log(error);
@@ -32,15 +40,26 @@ const Analytics = () => {
     //lifrecycle method
     useEffect(() => {
         getBloodGroupData();
-    }, []);
+    }, [user]);
 
     //get function
     const getBloodRecords = async () => {
         try {
-            const { data } = await API.get("/inventory/get-recent-inventory");
-            if (data?.success) {
-                setInventoryData(data?.inventory);
-                console.log(data);
+            if (user?.role === "hospital") {
+                const { data } = await API.post("/inventory/get-inventory-hospital", {
+                    filters: {
+                        hospital: user?._id,
+                        inventoryType: "out",
+                    },
+                });
+                if (data?.success) {
+                    setInventoryData(data?.inventory);
+                }
+            } else {
+                const { data } = await API.get("/inventory/get-recent-inventory");
+                if (data?.success) {
+                    setInventoryData(data?.inventory);
+                }
             }
         } catch (error) {
             console.log(error);
@@ -49,7 +68,7 @@ const Analytics = () => {
 
     useEffect(() => {
         getBloodRecords();
-    }, []);
+    }, [user]);
     return (
         <>
             <Header />
@@ -86,7 +105,7 @@ const Analytics = () => {
                                 <th>Blood Group</th>
                                 <th>Inventory Type</th>
                                 <th>Quantity</th>
-                                <th>Donor Email</th>
+                                <th>{user?.role === "hospital" ? "From" : "Donor Email"}</th>
                                 <th>Time & Date</th>
                             </tr>
                         </thead>

@@ -119,7 +119,7 @@ const HomePage = () => {
                                     <th scope="col">Blood Group</th>
                                     <th scope="col">Inventory Type</th>
                                     <th scope="col">Quantity</th>
-                                    <th scope="col">Donor Email</th>
+                                    <th scope="col">{user?.role === "hospital" ? "From" : "Donor Email"}</th>
                                     <th scope="col">TIme & Date</th>
                                 </tr>
                             </thead>

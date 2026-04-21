@@ -2,6 +2,7 @@ const express = require("express");
 const authMiddleware = require("../middlewares/authMiddleware");
 const {
     bloodGroupDetailsContoller,
+    bloodGroupDetailsHospitalContoller,
 } = require("../controllers/analyticsController");
 
 const router = express.Router();
@@ -10,5 +11,8 @@ const router = express.Router();
 
 //GET BLOOD DATA
 router.get("/bloodGroups-data", authMiddleware, bloodGroupDetailsContoller);
+
+//GET BLOOD DATA FOR HOSPITAL
+router.get("/bloodGroups-data-hospital", authMiddleware, bloodGroupDetailsHospitalContoller);
 
 module.exports = router;

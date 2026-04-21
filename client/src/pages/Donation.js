@@ -22,12 +22,7 @@ const Donation = () => {
                     setData(data?.inventory);
                 }
             } else if (user?.role === "hospital") {
-                const { data } = await API.post("/inventory/get-inventory-hospital", {
-                    filters: {
-                        organisation: user?._id,
-                        inventoryType: "in",
-                    },
-                });
+                const { data } = await API.get("/inventory/get-inventory-received");
                 if (data?.success) {
                     setData(data?.inventory);
                 }
@@ -93,7 +88,7 @@ const Donation = () => {
                             <tr key={record._id}>
                                 <td>{record.bloodGroup}</td>
                                 <td>{record.quantity} ML</td>
-                                <td>{record.email}</td>
+                                <td>{record.fromEmail || record.email || "N/A"}</td>
                                 <td>{moment(record.createdAt).format("DD/MM/YYYY hh:mm A")}</td>
                             </tr>
                         ))}

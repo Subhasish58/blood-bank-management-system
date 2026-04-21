@@ -19,56 +19,112 @@ const createInventoryController = async (req, res) => {
         // }
 
         if (req.body.inventoryType == "out") {
+            req.body.hospital = user?._id;
+
+            // Determine sender role and validate quantity accordingly
+            const sender = await userModel.findById(req.userId);
             const requestedBloodGroup = req.body.bloodGroup;
             const requestedQuantityOfBlood = req.body.quantity;
-            const organisation = new mongoose.Types.ObjectId(req.body.organisation);
-            //calculate Blood Quanitity
-            const totalInOfRequestedBlood = await inventoryModel.aggregate([
-                {
-                    $match: {
-                        organisation,
-                        inventoryType: "in",
-                        bloodGroup: requestedBloodGroup,
-                    },
-                },
-                {
-                    $group: {
-                        _id: "$bloodGroup",
-                        total: { $sum: "$quantity" },
-                    },
-                },
-            ]);
-            // console.log("Total In", totalInOfRequestedBlood);
-            const totalIn = totalInOfRequestedBlood[0]?.total || 0;
-            //calculate OUT Blood Quanitity
 
-            const totalOutOfRequestedBloodGroup = await inventoryModel.aggregate([
-                {
-                    $match: {
-                        organisation,
-                        inventoryType: "out",
-                        bloodGroup: requestedBloodGroup,
+            if (sender?.role === "organisation") {
+                // Validate using organisation's blood stock (totalIn - totalOut)
+                const organisation = new mongoose.Types.ObjectId(req.body.organisation);
+                const totalIn = await inventoryModel.aggregate([
+                    {
+                        $match: {
+                            organisation,
+                            inventoryType: "in",
+                            bloodGroup: requestedBloodGroup,
+                        },
                     },
-                },
-                {
-                    $group: {
-                        _id: "$bloodGroup",
-                        total: { $sum: "$quantity" },
+                    {
+                        $group: { _id: null, total: { $sum: "$quantity" } },
                     },
-                },
-            ]);
-            const totalOut = totalOutOfRequestedBloodGroup[0]?.total || 0;
+                ]);
+                const totalOut = await inventoryModel.aggregate([
+                    {
+                        $match: {
+                            organisation,
+                            inventoryType: "out",
+                            bloodGroup: requestedBloodGroup,
+                        },
+                    },
+                    {
+                        $group: { _id: null, total: { $sum: "$quantity" } },
+                    },
+                ]);
+                const available = (totalIn[0]?.total || 0) - (totalOut[0]?.total || 0);
+                if (available < requestedQuantityOfBlood) {
+                    return res.status(500).send({
+                        success: false,
+                        message: `Only ${available}ML of ${requestedBloodGroup.toUpperCase()} is available`,
+                    });
+                }
+            } else if (sender?.role === "hospital") {
+                req.body.sender = req.userId;
+                const requestedBloodGroup = req.body.bloodGroup;
+                const requestedQuantityOfBlood = req.body.quantity;
+                const hospitalId = new mongoose.Types.ObjectId(req.userId);
 
-            //in & Out Calc
-            const availableQuanityOfBloodGroup = totalIn - totalOut;
-            //quantity validation
-            if (availableQuanityOfBloodGroup < requestedQuantityOfBlood) {
-                return res.status(500).send({
-                    success: false,
-                    message: `Only ${availableQuanityOfBloodGroup}ML of ${requestedBloodGroup.toUpperCase()} is available`,
-                });
+                // Blood available = received from donors + received from hospitals - given to consumers - given to hospitals
+                // Received from donors: inventoryType "in", organisation = this hospital
+                const receivedFromDonors = await inventoryModel.aggregate([
+                    {
+                        $match: {
+                            organisation: hospitalId,
+                            inventoryType: "in",
+                            bloodGroup: requestedBloodGroup,
+                        },
+                    },
+                    { $group: { _id: null, total: { $sum: "$quantity" } } },
+                ]);
+                // Received from other hospitals: inventoryType "out", hospital = this hospital, organisation != this hospital (exclude self-transfers)
+                const receivedFromHospitals = await inventoryModel.aggregate([
+                    {
+                        $match: {
+                            hospital: hospitalId,
+                            organisation: { $ne: hospitalId },
+                            inventoryType: "out",
+                            bloodGroup: requestedBloodGroup,
+                        },
+                    },
+                    { $group: { _id: null, total: { $sum: "$quantity" } } },
+                ]);
+                // Given to consumers: inventoryType "in", donor = this hospital
+                const givenToConsumers = await inventoryModel.aggregate([
+                    {
+                        $match: {
+                            donor: hospitalId,
+                            inventoryType: "in",
+                            bloodGroup: requestedBloodGroup,
+                        },
+                    },
+                    { $group: { _id: null, total: { $sum: "$quantity" } } },
+                ]);
+                // Given to other hospitals: inventoryType "out", sender = this hospital OR (old records) organisation = this hospital, hospital != this hospital
+                const givenToHospitals = await inventoryModel.aggregate([
+                    {
+                        $match: {
+                            $or: [
+                                { sender: hospitalId, inventoryType: "out", bloodGroup: requestedBloodGroup },
+                                { sender: null, organisation: hospitalId, hospital: { $ne: hospitalId }, inventoryType: "out", bloodGroup: requestedBloodGroup },
+                            ],
+                        },
+                    },
+                    { $group: { _id: null, total: { $sum: "$quantity" } } },
+                ]);
+
+                const totalReceived = (receivedFromDonors[0]?.total || 0) + (receivedFromHospitals[0]?.total || 0);
+                const totalGiven = (givenToConsumers[0]?.total || 0) + (givenToHospitals[0]?.total || 0);
+                const available = totalReceived - totalGiven;
+
+                if (available < requestedQuantityOfBlood) {
+                    return res.status(500).send({
+                        success: false,
+                        message: `Insufficient blood available. You have ${available}ML of ${requestedBloodGroup.toUpperCase()} available to transfer.`,
+                    });
+                }
             }
-            req.body.hospital = user?._id;
         }
         else {
             req.body.donor = user?._id;
@@ -124,6 +180,7 @@ const getInventoryHospitalController = async (req, res) => {
             .populate("donor")
             .populate("hospital")
             .populate("organisation")
+            .populate("sender")
             .sort({ createdAt: -1 });
         return res.status(200).send({
             success: true,
@@ -261,6 +318,94 @@ const getRecentInventoryController = async (req, res) => {
     }
 };
 
+// GET BLOOD RECEIVED BY HOSPITAL (from donors and other hospitals)
+const getInventoryReceivedController = async (req, res) => {
+    try {
+        const hospital = req.userId;
+        const inventory = await inventoryModel.aggregate([
+            {
+                $match: {
+                    $or: [
+                        // Blood received from donors (organisations receive from donors)
+                        { inventoryType: "in", organisation: new mongoose.Types.ObjectId(hospital) },
+                        // Blood received from other hospitals (hospital-to-hospital transfer)
+                        { inventoryType: "out", hospital: new mongoose.Types.ObjectId(hospital) },
+                    ],
+                },
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "donor",
+                    foreignField: "_id",
+                    as: "donorInfo",
+                },
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "sender",
+                    foreignField: "_id",
+                    as: "senderInfo",
+                },
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "organisation",
+                    foreignField: "_id",
+                    as: "orgInfo",
+                },
+            },
+            {
+                $addFields: {
+                    fromEmail: {
+                        $cond: {
+                            if: { $eq: ["$inventoryType", "out"] },
+                            then: {
+                                $ifNull: [
+                                    { $arrayElemAt: ["$senderInfo.email", 0] },
+                                    { $arrayElemAt: ["$orgInfo.email", 0] },
+                                    "$email",
+                                ],
+                            },
+                            else: {
+                                $ifNull: [
+                                    { $arrayElemAt: ["$donorInfo.email", 0] },
+                                    "$email",
+                                ],
+                            },
+                        },
+                    },
+                },
+            },
+            {
+                $project: {
+                    bloodGroup: 1,
+                    quantity: 1,
+                    inventoryType: 1,
+                    email: 1,
+                    createdAt: 1,
+                    fromEmail: 1,
+                },
+            },
+            { $sort: { createdAt: -1 } },
+        ]);
+        return res.status(200).send({
+            success: true,
+            message: "Blood Received Records Fetched",
+            inventory,
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send({
+            success: false,
+            message: "Error In Get Received Inventory",
+            error,
+        });
+    }
+};
+
 module.exports = {
     createInventoryController,
     getInventoryController,
@@ -269,5 +414,6 @@ module.exports = {
     getOrganisationController,
     getOrganisationForHospitalController,
     getInventoryHospitalController,
-    getRecentInventoryController
+    getRecentInventoryController,
+    getInventoryReceivedController,
 };
