@@ -13,6 +13,7 @@ const Form = ({ formType, submitBtn, formTitle }) => {
     const [website, setWebsite] = useState("");
     const [address, setAddress] = useState("");
     const [phone, setPhone] = useState("");
+    const [bloodGroup, setBloodGroup] = useState("");
     return (
         <div>
             <form
@@ -30,7 +31,8 @@ const Form = ({ formType, submitBtn, formTitle }) => {
                             organisationName,
                             address,
                             hospitalName,
-                            website
+                            website,
+                            bloodGroup
                         );
                 }}
             >
@@ -191,6 +193,29 @@ const Form = ({ formType, submitBtn, formTitle }) => {
                                         value={phone}
                                         onChange={(e) => setPhone(e.target.value)}
                                     />
+                                    {role === "donor" && (
+                                        <div className="mb-3">
+                                            <label htmlFor="forBloodGroup" className="form-label">
+                                                Blood Group
+                                            </label>
+                                            <select
+                                                className="form-control"
+                                                name="bloodGroup"
+                                                value={bloodGroup}
+                                                onChange={(e) => setBloodGroup(e.target.value)}
+                                            >
+                                                <option value="">Select Blood Group</option>
+                                                <option value="A+">A+</option>
+                                                <option value="A-">A-</option>
+                                                <option value="B+">B+</option>
+                                                <option value="B-">B-</option>
+                                                <option value="AB+">AB+</option>
+                                                <option value="AB-">AB-</option>
+                                                <option value="O+">O+</option>
+                                                <option value="O-">O-</option>
+                                            </select>
+                                        </div>
+                                    )}
                                 </>
                             );
                         }

@@ -54,6 +54,13 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: [true, "phone number is required"],
         },
+        bloodGroup: {
+            type: String,
+            required: function () {
+                return this.role === "donor";
+            },
+            enum: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
+        },
     },
     { timestamps: true }
 );

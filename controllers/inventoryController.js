@@ -11,6 +11,23 @@ const createInventoryController = async (req, res) => {
         if (!user) {
             throw new Error("User Not Found");
         }
+
+        // Blood group validation for inventory "in" (donation)
+        if (req.body.inventoryType === "in") {
+            const requestedBloodGroup = req.body.bloodGroup;
+            const donorBloodGroup = user.bloodGroup;
+
+            if (!donorBloodGroup) {
+                throw new Error("Donor blood group not found. Please contact support.");
+            }
+            if (donorBloodGroup !== requestedBloodGroup) {
+                return res.status(400).send({
+                    success: false,
+                    message: `Blood group mismatch. Donor ${user.name} has blood group ${donorBloodGroup}, but you selected ${requestedBloodGroup}. Please correct the blood group and try again.`,
+                });
+            }
+        }
+
         // if (inventoryType === "in" && user.role !== "donor") {
         //     throw new Error("Not a donor account");
         // }
